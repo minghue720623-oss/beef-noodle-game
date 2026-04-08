@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pygbag / Build folders
+build/
+dist/
+*.spec
+.vscode/
+
+# Game logic temporary files
+patch*.py
+refactor.py
+refactor.ps1
+update_trash.py
+
+# Game stats & Database (prevent accidental upload of personal stats)
+game_stats.db
+highscore/
+highscore.txt
