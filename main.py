@@ -181,7 +181,7 @@ def toggle_mute():
 
 # ---------------- 音效/BGM 載入 ----------------
 def load_sfx_base(name_no_ext):
-    for ext in (".ogg", ".wav", ".mp3"):
+    for ext in (".wav", ".ogg", ".mp3"):
         p = resource_path(name_no_ext + ext)
         if os.path.exists(p):
             try:
@@ -197,7 +197,7 @@ current_bgm_key = None
 
 
 def resolve_music_path(name_no_ext):
-    for ext in (".ogg", ".wav", ".mp3"):
+    for ext in (".wav", ".ogg", ".mp3"):
         p = resource_path(name_no_ext + ext)
         if os.path.exists(p):
             return p
