@@ -181,7 +181,7 @@ def toggle_mute():
 
 # ---------------- 音效/BGM 載入 ----------------
 def load_sfx_base(name_no_ext):
-    for ext in (".mp3", ".ogg", ".wav"):
+    for ext in (".ogg", ".wav", ".mp3"):
         p = resource_path(name_no_ext + ext)
         if os.path.exists(p):
             try:
@@ -197,7 +197,7 @@ current_bgm_key = None
 
 
 def resolve_music_path(name_no_ext):
-    for ext in (".mp3", ".ogg", ".wav"):
+    for ext in (".ogg", ".wav", ".mp3"):
         p = resource_path(name_no_ext + ext)
         if os.path.exists(p):
             return p
@@ -206,21 +206,35 @@ def resolve_music_path(name_no_ext):
 
 def play_bgm(name_no_ext, loop=-1, volume=None, fade_ms=500):
     global current_bgm_key, MUSIC_VOLUME
+    # 如果正在播放相同的音樂，就不重複載入，避免轉場卡頓
+    if current_bgm_key == name_no_ext and pygame.mixer.music.get_busy():
+        return
+
     path = resolve_music_path(name_no_ext)
     if not path:
         print(f"[BGM] Not found: {name_no_ext}")
         return
     try:
         if pygame.mixer.music.get_busy():
-            pygame.mixer.music.fadeout(fade_ms)
+            if IS_WEB:
+                pygame.mixer.music.stop() # 網頁版 stop 比 fadeout 穩定
+            else:
+                pygame.mixer.music.fadeout(fade_ms)
+        
         pygame.mixer.music.load(path)
         if volume is not None:
             MUSIC_VOLUME = _clamp01(volume)
         pygame.mixer.music.set_volume(_effective_music())
+        
         try:
-            pygame.mixer.music.play(loop, fade_ms=fade_ms)
+            # 網頁版同樣建議避免 fade_ms 參數在 play 時產生的不穩定
+            if IS_WEB:
+                pygame.mixer.music.play(loop)
+            else:
+                pygame.mixer.music.play(loop, fade_ms=fade_ms)
         except TypeError:
             pygame.mixer.music.play(loop)
+            
         current_bgm_key = name_no_ext
     except Exception as e:
         print(f"[BGM] Failed: {e}")
@@ -1976,6 +1990,7 @@ async def main():
                         if timer <= 0:
                             show_countdown = False
                             timer = game_time
+                            await asyncio.sleep(0) # 轉場瞬間保留呼吸空間
                             play_bgm("bgm_fast", loop=-1, volume=None)
                     else:
                         if not game_ready:
